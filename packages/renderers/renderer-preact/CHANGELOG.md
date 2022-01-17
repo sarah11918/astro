@@ -1,5 +1,17 @@
 # @astrojs/renderer-preact
 
+## 0.4.0
+
+### Minor Changes
+
+- [#2202](https://github.com/withastro/astro/pull/2202) [`45cea6ae`](https://github.com/withastro/astro/commit/45cea6aec5a310fed4cb8da0d96670d6b99a2539) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Officially drop support for Node v12. The minimum supported version is now Node v14.15+,
+
+## 0.3.2
+
+### Patch Changes
+
+- [#2170](https://github.com/withastro/astro/pull/2170) [`5af24efb`](https://github.com/withastro/astro/commit/5af24efb3493b8f5b6a8f980c792455c7dc34eb5) Thanks [@FredKSchott](https://github.com/FredKSchott)! - Fix preact 10.6 regression by pinning to preact 10.5
+
 ## 0.3.1
 
 ### Patch Changes

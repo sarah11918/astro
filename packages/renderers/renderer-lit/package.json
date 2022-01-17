@@ -1,13 +1,17 @@
 {
   "name": "@astrojs/renderer-lit",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "Use Lit components within Astro",
+  "type": "module",
+  "author": "withastro",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/withastro/astro.git",
     "directory": "packages/renderers/renderer-lit"
   },
-  "type": "module",
+  "bugs": "https://github.com/withastro/astro/issues",
+  "homepage": "https://astro.build",
   "exports": {
     ".": "./index.js",
     "./*": "./*",
@@ -16,7 +20,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@lit-labs/ssr": "^1.0.0",
+    "@lit-labs/ssr": "^2.0.1",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "lit": "^2.0.2"
   }

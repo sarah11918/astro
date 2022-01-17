@@ -9,7 +9,6 @@ on:
       - '.vscode/**'
       - 'docs/**'
       - 'examples/**'
-      - 'www/**'
 
 # Automatically cancel in-progress actions on the same branch
 concurrency:
@@ -37,7 +36,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install NPM Dependencies
-        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines
+        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
         env:
           CI: true
       
@@ -60,7 +59,7 @@ jobs:
           eslint_args: --ignore-pattern test --ignore-pattern vendor
           eslint_dir: packages/astro
           eslint_extensions: ts
-          prettier: true
+          prettier: false
           auto_fix: true
           git_name: github-actions[bot]
           git_email: github-actions[bot]@users.noreply.github.com
@@ -83,19 +82,29 @@ jobs:
           node-version: 16
           cache: 'yarn'
 
+      - name: Cache Node Modules
+        id: cache-node
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+          restore-keys: |
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-
+
       - name: Install NPM Dependencies
-        run: yarn install --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
         env:
           CI: true
 
       - name: Build Packages
-        run: yarn build:all
+        run: yarn build --force
 
       - name: Upload Package Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: packages/**/dist/*
+          path: packages/**/dist/**
           if-no-files-found: error
   
   # Test depends on Build's output, which allows us to skip any build process!
@@ -106,7 +115,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node_version: [12, 14, 16]
+        node_version: [14, 16]
         include:
           - os: windows-latest
             node_version: 16
@@ -131,20 +140,36 @@ jobs:
       - name: Extract Artifacts
         run: ./.github/extract-artifacts.sh
 
+      - name: Cache Node Modules
+        id: cache-node
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+          restore-keys: |
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-
+
       - name: Install NPM Dependencies
-        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines
+        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
         env:
           CI: true
 
       - name: Test
+        if: ${{ matrix.os != 'windows-latest' }}
         run: yarn test
 
+      # Turbo seems to make the tests hang on Windows, just run them directly
+      - name: Test (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: yarn workspace astro run test
+
   smoke:
-    name: 'Smoke Test: ${{ matrix.target }}'
-    runs-on: ubuntu-latest
+    name: 'Test (Smoke) ${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        target: [docs, www]
+        os: [windows-latest, ubuntu-latest]
     needs:
       - build
     steps:
@@ -154,7 +179,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 14
           cache: 'yarn'
 
       - name: Download Build Artifacts
@@ -163,21 +188,37 @@ jobs:
       - name: Extract Artifacts
         run: ./.github/extract-artifacts.sh
 
+      - name: Cache Node Modules
+        id: cache-node
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+          restore-keys: |
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-
+
       - name: Install NPM Dependencies
-        run: yarn install --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
+        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
         env:
           CI: true
 
-      - name: Build
-        run: yarn build
-        working-directory: ${{ matrix.target }}
+      - name: Test
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: yarn run build:examples --concurrency=1
 
-  # Changelog can only run _after_ Build and Test.
+      # Turbo seems to fail on Windows, so run a custom script directly.
+      - name: Test (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: node ./scripts/smoke/index.js
+
+
+  # Changelog can only run _after_ build.
   # We download all `dist/` artifacts from GitHub to skip the build process.
   changelog:
     name: Changelog PR or Release
     if: ${{ github.ref_name == 'main' && github.repository_owner == 'withastro' }}
-    needs: [lint, test, smoke]
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -196,8 +237,18 @@ jobs:
       - name: Extract Artifacts
         run: ./.github/extract-artifacts.sh
 
+      - name: Cache Node Modules
+        id: cache-node
+        uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+          restore-keys: |
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-${{ github.run_id }}
+            cache-node_modules-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}-
+
       - name: Install NPM Dependencies
-        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines
+        run: yarn install --prefer-offline --frozen-lockfile --ignore-engines --registry https://registry.npmjs.org --network-timeout 300000
         env:
           CI: true
       
@@ -206,7 +257,7 @@ jobs:
         uses: changesets/action@v1
         with:
           publish: yarn changeset publish
-          commit: 'chore: release'
+          commit: '[ci] release'
           title: '[ci] release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,5 +1,17 @@
 # @astrojs/renderer-react
 
+## 0.4.1
+
+### Patch Changes
+
+- [#2369](https://github.com/withastro/astro/pull/2369) [`20eaddb2`](https://github.com/withastro/astro/commit/20eaddb2a723253c7fbde3e56955a549bdf3f342) Thanks [@matthewp](https://github.com/matthewp)! - Fix for using the React renderer with the static build
+
+## 0.4.0
+
+### Minor Changes
+
+- [#2202](https://github.com/withastro/astro/pull/2202) [`45cea6ae`](https://github.com/withastro/astro/commit/45cea6aec5a310fed4cb8da0d96670d6b99a2539) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Officially drop support for Node v12. The minimum supported version is now Node v14.15+,
+
 ## 0.3.1
 
 ### Patch Changes

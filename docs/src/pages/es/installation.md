@@ -8,7 +8,7 @@ Hay diferentes formas de instalar Astro en un nuevo proyecto.
 
 ## Prerrequisitos
 
-- **Node.js** - `v12.20.0`, `v14.13.1`, `v16.0.0`, o mayor.
+- **Node.js** - `v14.15.0`, `v16.0.0`, o mayor.
 - **Editor de texto** - Te recomendamos [VS Code](https://code.visualstudio.com/) con nuestra [extensión oficial de Astro](https://marketplace.visualstudio.com/items?itemName=astro-build.astro-vscode).
 - **Terminal** - Principalmente, puedes ingresar a Astro por medio de linea de comando del terminal.
 
@@ -26,7 +26,7 @@ npm init astro
 yarn create astro
 ```
 
-El asistente de instalación [`create-astro`](https://github.com/withastro/astro/tree/main/packages/create-astro), te permite escoger de una lista de [plantillas de inicio](/examples); por otro lado, puedes importar tus propios proyectos de Astro directamente desde GitHub.
+El asistente de instalación [`create-astro`](https://github.com/withastro/astro/tree/main/packages/create-astro), te permite escoger de una lista de [plantillas de inicio](/en/themes); por otro lado, puedes importar tus propios proyectos de Astro directamente desde GitHub.
 
 ```bash
 # Nota: Reemplaza "my-astro-project" con el nombre de tu proyecto.
@@ -162,10 +162,10 @@ Con esta instrucción Astro generará tu sitio web y lo guardará directamente e
 
 ¡Felicidades! ¡Ahora estás listo para comenzar a desarrollar!
 
-Te recomendamos fervientemente que te familiarices con la forma en que Astro funciona. Lo puedes hacer explorando nuestra [documentación](/docs/), te sugerimos que consideres las siguientes lecturas:
+Te recomendamos fervientemente que te familiarices con la forma en que Astro funciona. Lo puedes hacer explorando nuestra documentación, te sugerimos que consideres las siguientes lecturas:
 
 📚 Aprende más sobre la estructura de proyectos de Astro, en nuestra [guía de estructura de proyecto](/es/core-concepts/project-structure).
 
 📚 Aprende más sobre la sintaxis de los componentes de Astro, en nuestra [guía de componentes de Astro](/es/core-concepts/astro-components).
 
-📚 Aprende más sobre la rutas basada en archivos de Astro, en nuestra [guía de rutas](core-concepts/astro-pages).
+📚 Aprende más sobre la rutas basada en archivos de Astro, en nuestra [guía de rutas](/es/core-concepts/astro-pages).

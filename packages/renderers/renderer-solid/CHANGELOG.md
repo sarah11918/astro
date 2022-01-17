@@ -1,5 +1,17 @@
 # @astrojs/renderer-solid
 
+## 0.3.1
+
+### Patch Changes
+
+- [#2359](https://github.com/withastro/astro/pull/2359) [`f482c626`](https://github.com/withastro/astro/commit/f482c626a6e3472052d13cb0d348323ef4e822a8) Thanks [@toSayNothing](https://github.com/toSayNothing)! - fix renderer-solid
+
+## 0.3.0
+
+### Minor Changes
+
+- [#2202](https://github.com/withastro/astro/pull/2202) [`45cea6ae`](https://github.com/withastro/astro/commit/45cea6aec5a310fed4cb8da0d96670d6b99a2539) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Officially drop support for Node v12. The minimum supported version is now Node v14.15+,
+
 ## 0.2.1
 
 ### Patch Changes

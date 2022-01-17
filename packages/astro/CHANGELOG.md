@@ -1,5 +1,136 @@
 # astro
 
+## 0.22.13
+
+### Patch Changes
+
+- [#2391](https://github.com/withastro/astro/pull/2391) [`c8a257ad`](https://github.com/withastro/astro/commit/c8a257adc4b2ed92aaf4aa74b0e1ac4db48530f2) Thanks [@matthewp](https://github.com/matthewp)! - Improvements performance for building sites with thousands of pages with the static build
+
+## 0.22.12
+
+### Patch Changes
+
+- [#2370](https://github.com/withastro/astro/pull/2370) [`a7967530`](https://github.com/withastro/astro/commit/a7967530dfe9cfab5d6d866c8d2bcba9c47de39c) Thanks [@matthewp](https://github.com/matthewp)! - Fixes support for Lit within the static build
+
+* [#2373](https://github.com/withastro/astro/pull/2373) [`92532b88`](https://github.com/withastro/astro/commit/92532b88820bc45f3f02bca0054e8433c3f7a743) Thanks [@matthewp](https://github.com/matthewp)! - Hydrated component fix with the static build
+
+* Updated dependencies [[`20eaddb2`](https://github.com/withastro/astro/commit/20eaddb2a723253c7fbde3e56955a549bdf3f342)]:
+  - @astrojs/renderer-react@0.4.1
+
+## 0.22.11
+
+### Patch Changes
+
+- [#2367](https://github.com/withastro/astro/pull/2367) [`2aa5ba5c`](https://github.com/withastro/astro/commit/2aa5ba5c52d0fa6eb2d17ca0b38a761ab40f8ca4) Thanks [@matthewp](https://github.com/matthewp)! - Fixes use of framework renderers in the static build
+
+* [#2365](https://github.com/withastro/astro/pull/2365) [`20d0cce6`](https://github.com/withastro/astro/commit/20d0cce681d5e913ca19c2466055f69541bced23) Thanks [@matthewp](https://github.com/matthewp)! - Fixes shared CSS within the static build
+
+## 0.22.10
+
+### Patch Changes
+
+- [#2335](https://github.com/withastro/astro/pull/2335) [`f008a19c`](https://github.com/withastro/astro/commit/f008a19c9d4ad046ef7b24262605e8107c34a9bc) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Preserve pathnames for sitemap.xml
+
+* [#2358](https://github.com/withastro/astro/pull/2358) [`10074972`](https://github.com/withastro/astro/commit/1007497297769455d41e23f48dfdbec90b403f2e) Thanks [@matthewp](https://github.com/matthewp)! - Fixes the output when using the experimental-static-build flag
+
+- [#2323](https://github.com/withastro/astro/pull/2323) [`69af658b`](https://github.com/withastro/astro/commit/69af658b00be0a3b1bb0eb11c2e480973a5a6301) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Fix issue with plugins running twice in dev and build
+
+* [#2338](https://github.com/withastro/astro/pull/2338) [`c0cb7eea`](https://github.com/withastro/astro/commit/c0cb7eead5389e93c9a3e8206a301e44bd928702) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Fix preview issues triggered by pageUrlFormat & trailingSlash options
+
+- [#2363](https://github.com/withastro/astro/pull/2363) [`7e0b32c5`](https://github.com/withastro/astro/commit/7e0b32c5696ec9db3cdee3de732de056b380568a) Thanks [@matthewp](https://github.com/matthewp)! - Fixes use of --experimental-static-build with markdown pages
+
+## 0.22.9
+
+### Patch Changes
+
+- [#2337](https://github.com/withastro/astro/pull/2337) [`180dfcf2`](https://github.com/withastro/astro/commit/180dfcf2fc39c4697e178c47a3d3a5459d845cdf) Thanks [@matthewp](https://github.com/matthewp)! - Fix using the Code component in static build
+
+## 0.22.8
+
+### Patch Changes
+
+- [#2330](https://github.com/withastro/astro/pull/2330) [`71ca0912`](https://github.com/withastro/astro/commit/71ca09125a86e74c73d30d01839e27859e1ade1a) Thanks [@matthewp](https://github.com/matthewp)! - Fixes subpath support in `astro preview`
+
+## 0.22.7
+
+### Patch Changes
+
+- [#2324](https://github.com/withastro/astro/pull/2324) [`77ef43e6`](https://github.com/withastro/astro/commit/77ef43e66cf701de848a2998af646ee7762497d8) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Update compiler to remove console.log (sorry everyone!)
+
+* [`e0de21ef`](https://github.com/withastro/astro/commit/e0de21ef57227eb4c56f216280b8aa5e5e848937) Thanks [@FredKSchott](https://github.com/FredKSchott)! - Add `<guid>` to RSS feed.
+
+- [#2318](https://github.com/withastro/astro/pull/2318) [`c0204c0a`](https://github.com/withastro/astro/commit/c0204c0a416865eab9b905b61231ed9a304120a8) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Update `@astrojs/compiler` to [`0.7.3`](https://github.com/withastro/compiler/blob/main/lib/compiler/CHANGELOG.md#073)
+
+* [#2319](https://github.com/withastro/astro/pull/2319) [`e6379d51`](https://github.com/withastro/astro/commit/e6379d514df4924ac8679a8c5a251b56a1a6bee3) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Updated @astropub/webapi
+
+## 0.22.6
+
+### Patch Changes
+
+- [#2299](https://github.com/withastro/astro/pull/2299) [`5fbdd56f`](https://github.com/withastro/astro/commit/5fbdd56f157f58d9d768f9d5388340aaa316da81) Thanks [@tadeuzagallo](https://github.com/tadeuzagallo)! - Fix dynamic routes for sites with subpath
+
+* [#2308](https://github.com/withastro/astro/pull/2308) [`e98659b7`](https://github.com/withastro/astro/commit/e98659b7d65c02e4e60a3621d0ce13ca5f9878f5) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Update the Astro compiler, fixing a number of bugs
+
+## 0.22.5
+
+### Patch Changes
+
+- [#2305](https://github.com/withastro/astro/pull/2305) [`193ca60f`](https://github.com/withastro/astro/commit/193ca60f40c8875b1d655dcd0682560cc2e2487e) Thanks [@matthewp](https://github.com/matthewp)! - Fixes `astro check` errors with import.meta usage
+
+- Updated dependencies [[`34486676`](https://github.com/withastro/astro/commit/344866762c3a96b92bd754cf3706db73e2d74647)]:
+  - @astrojs/renderer-svelte@0.3.1
+
+## 0.22.4
+
+### Patch Changes
+
+- [#2302](https://github.com/withastro/astro/pull/2302) [`9db22b97`](https://github.com/withastro/astro/commit/9db22b97b604e2ab1908b28e3461aefb222dcf97) Thanks [@matthewp](https://github.com/matthewp)! - Fix to allow the static build to build hydrated components
+
+## 0.22.3
+
+### Patch Changes
+
+- [#2292](https://github.com/withastro/astro/pull/2292) [`2e55dc26`](https://github.com/withastro/astro/commit/2e55dc2686b0e2bff2e2ec76c184a17a3d2368c4) Thanks [@matthewp](https://github.com/matthewp)! - Rolls back a feature flag feature that was breaking the docs site
+
+## 0.22.2
+
+### Patch Changes
+
+- [#2290](https://github.com/withastro/astro/pull/2290) [`c77cf52e`](https://github.com/withastro/astro/commit/c77cf52e1648a2581479bd3187b5a5fa1f918832) Thanks [@matthewp](https://github.com/matthewp)! - Preserve wasm stack trace when verbose logging is enabled
+
+## 0.22.1
+
+### Patch Changes
+
+- [#2258](https://github.com/withastro/astro/pull/2258) [`db79d2e9`](https://github.com/withastro/astro/commit/db79d2e9ec02f3e3f25c6c10aa365acdd5c1a7cc) Thanks [@matthewp](https://github.com/matthewp)! - Fix for use of remote @import in inline styles
+
+## 0.22.0
+
+### Minor Changes
+
+- [#2202](https://github.com/withastro/astro/pull/2202) [`45cea6ae`](https://github.com/withastro/astro/commit/45cea6aec5a310fed4cb8da0d96670d6b99a2539) Thanks [@jonathantneal](https://github.com/jonathantneal)! - Officially drop support for Node v12. The minimum supported version is now Node v14.15+,
+
+* [`c5a7305f`](https://github.com/withastro/astro/commit/c5a7305f04222743c99d70b3ea061a1d31a67efa) Thanks [@natemoo-re](https://github.com/natemoo-re)! - Replace `fetch` detection via Vite plugin with a more resilient `globalThis` polyfill
+
+### Patch Changes
+
+- [#2240](https://github.com/withastro/astro/pull/2240) [`e07c1cbd`](https://github.com/withastro/astro/commit/e07c1cbd7ea46c57d637f981aaed43a733a846b1) Thanks [@FredKSchott](https://github.com/FredKSchott)! - Pin vite to v2.6, since that is the version that we have vendored.
+
+- Updated dependencies [[`45cea6ae`](https://github.com/withastro/astro/commit/45cea6aec5a310fed4cb8da0d96670d6b99a2539)]:
+  - @astrojs/prism@0.4.0
+  - @astrojs/renderer-preact@0.4.0
+  - @astrojs/renderer-react@0.4.0
+  - @astrojs/renderer-svelte@0.3.0
+  - @astrojs/renderer-vue@0.3.0
+  - @astrojs/markdown-remark@0.6.0
+
+## 0.21.13
+
+### Patch Changes
+
+- Updated dependencies [[`b8c821a0`](https://github.com/withastro/astro/commit/b8c821a0743ed004691eae0eea471a368d2fa35f)]:
+  - @astrojs/renderer-svelte@0.2.3
+
 ## 0.21.12
 
 ### Patch Changes
