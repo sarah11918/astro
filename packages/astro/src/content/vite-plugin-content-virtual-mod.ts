@@ -11,6 +11,7 @@ import { appendForwardSlash, removeFileExtension } from '../core/path.js';
 import { isServerLikeOutput } from '../core/util.js';
 import { rootRelativePath } from '../core/viteUtils.js';
 import type { AstroPluginMetadata } from '../vite-plugin-astro/index.js';
+import { createDefaultAstroMetadata } from '../vite-plugin-astro/metadata.js';
 import {
 	CONTENT_FLAG,
 	CONTENT_RENDER_FLAG,
@@ -77,17 +78,12 @@ export function astroContentVirtualModPlugin({
 					isClient,
 				});
 
+				const astro = createDefaultAstroMetadata();
+				astro.propagation = 'in-tree';
 				return {
 					code,
 					meta: {
-						astro: {
-							hydratedComponents: [],
-							clientOnlyComponents: [],
-							scripts: [],
-							containsHead: false,
-							propagation: 'in-tree',
-							pageOptions: {},
-						},
+						astro,
 					} satisfies AstroPluginMetadata,
 				};
 			}
@@ -133,21 +129,21 @@ export async function generateContentEntryFile({
 			`import.meta.glob(${JSON.stringify(value)}, { query: { ${flag}: true } })`;
 		contentEntryGlobResult = createGlob(
 			globWithUnderscoresIgnored(relContentDir, contentEntryExts),
-			CONTENT_FLAG
+			CONTENT_FLAG,
 		);
 		dataEntryGlobResult = createGlob(
 			globWithUnderscoresIgnored(relContentDir, dataEntryExts),
-			DATA_FLAG
+			DATA_FLAG,
 		);
 		renderEntryGlobResult = createGlob(
 			globWithUnderscoresIgnored(relContentDir, contentEntryExts),
-			CONTENT_RENDER_FLAG
+			CONTENT_RENDER_FLAG,
 		);
 	} else {
 		contentEntryGlobResult = getStringifiedCollectionFromLookup(
 			'content',
 			relContentDir,
-			lookupMap
+			lookupMap,
 		);
 		dataEntryGlobResult = getStringifiedCollectionFromLookup('data', relContentDir, lookupMap);
 		renderEntryGlobResult = getStringifiedCollectionFromLookup('render', relContentDir, lookupMap);
@@ -172,7 +168,7 @@ console.warn('astro:content is only supported running server-side. Using it in t
 function getStringifiedCollectionFromLookup(
 	wantedType: 'content' | 'data' | 'render',
 	relContentDir: string,
-	lookupMap: ContentLookupMap
+	lookupMap: ContentLookupMap,
 ) {
 	let str = '{';
 	// In dev, we don't need to normalize the import specifier at all. Vite handles it.
@@ -230,7 +226,7 @@ export async function generateLookupMap({
 			absolute: true,
 			cwd: fileURLToPath(root),
 			fs,
-		}
+		},
 	);
 
 	// Run 10 at a time to prevent `await getEntrySlug` from accessing the filesystem all at once.
@@ -280,7 +276,7 @@ export async function generateLookupMap({
 								collection,
 								slug,
 								lookupMap[collection].entries[slug],
-								rootRelativePath(root, filePath)
+								rootRelativePath(root, filePath),
 							),
 							hint:
 								slug !== generatedSlug
@@ -305,7 +301,7 @@ export async function generateLookupMap({
 						},
 					};
 				}
-			})
+			}),
 		);
 	}
 

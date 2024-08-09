@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fsMod from 'node:fs';
 import type { AddressInfo } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { bold } from 'kleur/colors';
@@ -39,8 +39,8 @@ async function withTakingALongTimeMsg<T>({
 		logger.info(
 			'build',
 			`Waiting for integration ${bold(JSON.stringify(name))}, hook ${bold(
-				JSON.stringify(hookName)
-			)}...`
+				JSON.stringify(hookName),
+			)}...`,
 		);
 	}, timeoutMs);
 	const result = await hookResult;
@@ -105,11 +105,13 @@ export async function runHookConfigSetup({
 	command,
 	logger,
 	isRestart = false,
+	fs = fsMod,
 }: {
 	settings: AstroSettings;
 	command: 'dev' | 'build' | 'preview';
 	logger: Logger;
 	isRestart?: boolean;
+	fs?: typeof fsMod;
 }): Promise<AstroSettings> {
 	// An adapter is an integration, so if one is provided push it.
 	if (settings.config.adapter) {
@@ -117,7 +119,7 @@ export async function runHookConfigSetup({
 	}
 	if (settings.config.experimental?.actions) {
 		const { default: actionsIntegration } = await import('../actions/index.js');
-		settings.config.integrations.push(actionsIntegration());
+		settings.config.integrations.push(actionsIntegration({ fs, settings }));
 	}
 
 	let updatedConfig: AstroConfig = { ...settings.config };
@@ -174,7 +176,7 @@ export async function runHookConfigSetup({
 					if (injectRoute.entrypoint == null && 'entryPoint' in injectRoute) {
 						logger.warn(
 							null,
-							`The injected route "${injectRoute.pattern}" by ${integration.name} specifies the entry point with the "entryPoint" property. This property is deprecated, please use "entrypoint" instead.`
+							`The injected route "${injectRoute.pattern}" by ${integration.name} specifies the entry point with the "entryPoint" property. This property is deprecated, please use "entrypoint" instead.`,
 						);
 						injectRoute.entrypoint = injectRoute.entryPoint as string;
 					}
@@ -193,26 +195,26 @@ export async function runHookConfigSetup({
 				addClientDirective: ({ name, entrypoint }) => {
 					if (updatedSettings.clientDirectives.has(name) || addedClientDirectives.has(name)) {
 						throw new Error(
-							`The "${integration.name}" integration is trying to add the "${name}" client directive, but it already exists.`
+							`The "${integration.name}" integration is trying to add the "${name}" client directive, but it already exists.`,
 						);
 					}
 					// TODO: this should be performed after astro:config:done
 					addedClientDirectives.set(
 						name,
-						buildClientDirectiveEntrypoint(name, entrypoint, settings.config.root)
+						buildClientDirectiveEntrypoint(name, entrypoint, settings.config.root),
 					);
 				},
 				addMiddleware: ({ order, entrypoint }) => {
 					if (typeof updatedSettings.middlewares[order] === 'undefined') {
 						throw new Error(
-							`The "${integration.name}" integration is trying to add middleware but did not specify an order.`
+							`The "${integration.name}" integration is trying to add middleware but did not specify an order.`,
 						);
 					}
 					logger.debug(
 						'middleware',
 						`The integration ${integration.name} has added middleware that runs ${
 							order === 'pre' ? 'before' : 'after'
-						} any application middleware you define.`
+						} any application middleware you define.`,
 					);
 					updatedSettings.middlewares[order].push(entrypoint);
 				},
@@ -228,9 +230,11 @@ export async function runHookConfigSetup({
 				const exts = (input.flat(Infinity) as string[]).map((ext) => `.${ext.replace(/^\./, '')}`);
 				updatedSettings.pageExtensions.push(...exts);
 			}
+
 			function addContentEntryType(contentEntryType: ContentEntryType) {
 				updatedSettings.contentEntryTypes.push(contentEntryType);
 			}
+
 			function addDataEntryType(dataEntryType: DataEntryType) {
 				updatedSettings.dataEntryTypes.push(dataEntryType);
 			}
@@ -292,12 +296,12 @@ export async function runHookConfigDone({
 					setAdapter(adapter) {
 						if (settings.adapter && settings.adapter.name !== adapter.name) {
 							throw new Error(
-								`Integration "${integration.name}" conflicts with "${settings.adapter.name}". You can only configure one deployment integration.`
+								`Integration "${integration.name}" conflicts with "${settings.adapter.name}". You can only configure one deployment integration.`,
 							);
 						}
 						if (!adapter.supportedAstroFeatures) {
 							throw new Error(
-								`The adapter ${adapter.name} doesn't provide a feature map. It is required in Astro 4.0.`
+								`The adapter ${adapter.name} doesn't provide a feature map. It is required in Astro 4.0.`,
 							);
 						} else {
 							const validationResult = validateSupportedFeatures(
@@ -306,7 +310,7 @@ export async function runHookConfigDone({
 								settings.config,
 								// SAFETY: we checked before if it's not present, and we throw an error
 								adapter.adapterFeatures,
-								logger
+								logger,
 							);
 							for (const [featureName, supported] of Object.entries(validationResult)) {
 								// If `supported` / `validationResult[featureName]` only allows boolean,
@@ -316,7 +320,7 @@ export async function runHookConfigDone({
 								if (!supported && featureName !== 'assets') {
 									logger.error(
 										null,
-										`The adapter ${adapter.name} doesn't support the feature ${featureName}. Your project won't be built. You should not use it.`
+										`The adapter ${adapter.name} doesn't support the feature ${featureName}. Your project won't be built. You should not use it.`,
 									);
 								}
 							}
@@ -532,7 +536,7 @@ export async function runHookBuildDone({
 	cacheManifest,
 }: RunHookBuildDone) {
 	const dir = isServerLikeOutput(config) ? config.build.client : config.outDir;
-	await fs.promises.mkdir(dir, { recursive: true });
+	await fsMod.promises.mkdir(dir, { recursive: true });
 
 	for (const integration of config.integrations) {
 		if (integration?.hooks?.['astro:build:done']) {

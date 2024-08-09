@@ -1,7 +1,7 @@
 import { getAstroStudioEnv } from '@astrojs/studio';
 import type { AstroConfig, AstroIntegration } from 'astro';
 import { loadEnv } from 'vite';
-import type { AstroDbIntegration } from './types.js';
+import './types.js';
 
 export type VitePlugin = Required<AstroConfig['vite']>['plugins'][number];
 
@@ -19,7 +19,7 @@ export function getDbDirectoryUrl(root: URL | string) {
 	return new URL('db/', root);
 }
 
-export function defineDbIntegration(integration: AstroDbIntegration): AstroIntegration {
+export function defineDbIntegration(integration: AstroIntegration): AstroIntegration {
 	return integration;
 }
 
@@ -31,9 +31,9 @@ export type Result<T> = { success: true; data: T } | { success: false; data: unk
  */
 export function mapObject<T, U = T>(
 	item: Record<string, T>,
-	callback: (key: string, value: T) => U
+	callback: (key: string, value: T) => U,
 ): Record<string, U> {
 	return Object.fromEntries(
-		Object.entries(item).map(([key, value]) => [key, callback(key, value)])
+		Object.entries(item).map(([key, value]) => [key, callback(key, value)]),
 	);
 }

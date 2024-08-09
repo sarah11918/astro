@@ -1,6 +1,6 @@
 import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Plugin, Rollup } from 'vite';
+import type { Plugin } from 'vite';
 import type { AstroSettings, SSRElement } from '../@types/astro.js';
 import { getAssetsPrefix } from '../assets/utils/getAssetsPrefix.js';
 import type { BuildInternals } from '../core/build/internal.js';
@@ -77,7 +77,7 @@ export function astroContentAssetPropagationPlugin({
 						: await getScriptsForURL(
 								pathToFileURL(basePath),
 								settings.config.root,
-								devModuleLoader
+								devModuleLoader,
 							);
 
 					// Register files we crawled to be able to retrieve the rendered styles and scripts,
@@ -127,24 +127,11 @@ export function astroContentAssetPropagationPlugin({
 
 export function astroConfigBuildPlugin(
 	options: StaticBuildOptions,
-	internals: BuildInternals
+	internals: BuildInternals,
 ): AstroBuildPlugin {
-	let ssrPluginContext: Rollup.PluginContext | undefined = undefined;
 	return {
 		targets: ['server'],
 		hooks: {
-			'build:before': ({ target }) => {
-				return {
-					vitePlugin: {
-						name: 'astro:content-build-plugin',
-						generateBundle() {
-							if (target === 'server') {
-								ssrPluginContext = this;
-							}
-						},
-					},
-				};
-			},
 			'build:post': ({ ssrOutputs, clientOutputs, mutate }) => {
 				const outputs = ssrOutputs.flatMap((o) => o.output);
 				const prependBase = (src: string) => {
@@ -189,7 +176,7 @@ export function astroConfigBuildPlugin(
 						if (entryStyles.size) {
 							newCode = newCode.replace(
 								JSON.stringify(STYLES_PLACEHOLDER),
-								JSON.stringify(Array.from(entryStyles))
+								JSON.stringify(Array.from(entryStyles)),
 							);
 						} else {
 							newCode = newCode.replace(JSON.stringify(STYLES_PLACEHOLDER), '[]');
@@ -197,7 +184,7 @@ export function astroConfigBuildPlugin(
 						if (entryLinks.size) {
 							newCode = newCode.replace(
 								JSON.stringify(LINKS_PLACEHOLDER),
-								JSON.stringify(Array.from(entryLinks).map(prependBase))
+								JSON.stringify(Array.from(entryLinks).map(prependBase)),
 							);
 						} else {
 							newCode = newCode.replace(JSON.stringify(LINKS_PLACEHOLDER), '[]');
@@ -223,8 +210,8 @@ export function astroConfigBuildPlugin(
 											type: 'module',
 										},
 										children: '',
-									}))
-								)
+									})),
+								),
 							);
 						} else {
 							newCode = newCode.replace(JSON.stringify(SCRIPTS_PLACEHOLDER), '[]');
@@ -232,8 +219,6 @@ export function astroConfigBuildPlugin(
 						mutate(chunk, ['server'], newCode);
 					}
 				}
-
-				ssrPluginContext = undefined;
 			},
 		},
 	};

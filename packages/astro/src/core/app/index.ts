@@ -20,10 +20,11 @@ import {
 } from '../path.js';
 import { RenderContext } from '../render-context.js';
 import { createAssetLink } from '../render/ssr-element.js';
-import { ensure404Route } from '../routing/astro-designed-error-pages.js';
+import { createDefaultRoutes, injectDefaultRoutes } from '../routing/default.js';
 import { matchRoute } from '../routing/match.js';
 import { createOriginCheckMiddleware } from './middlewares.js';
 import { AppPipeline } from './pipeline.js';
+
 export { deserializeManifest } from './common.js';
 
 export interface RenderOptions {
@@ -87,14 +88,14 @@ export class App {
 
 	constructor(manifest: SSRManifest, streaming = true) {
 		this.#manifest = manifest;
-		this.#manifestData = ensure404Route({
+		this.#manifestData = injectDefaultRoutes(manifest, {
 			routes: manifest.routes.map((route) => route.routeData),
 		});
 		this.#baseWithoutTrailingSlash = removeTrailingForwardSlash(this.#manifest.base);
 		this.#pipeline = this.#createPipeline(this.#manifestData, streaming);
 		this.#adapterLogger = new AstroIntegrationLogger(
 			this.#logger.options,
-			this.#manifest.adapterName
+			this.#manifest.adapterName,
 		);
 	}
 
@@ -113,7 +114,7 @@ export class App {
 		if (this.#manifest.checkOrigin) {
 			this.#manifest.middleware = sequence(
 				createOriginCheckMiddleware(),
-				this.#manifest.middleware
+				this.#manifest.middleware,
 			);
 		}
 
@@ -122,6 +123,7 @@ export class App {
 			manifest: this.#manifest,
 			mode: 'production',
 			renderers: this.#manifest.renderers,
+			defaultRoutes: createDefaultRoutes(this.#manifest),
 			resolve: async (specifier: string) => {
 				if (!(specifier in this.#manifest.entryModules)) {
 					throw new Error(`Unable to resolve [${specifier}]`);
@@ -145,6 +147,7 @@ export class App {
 	set setManifestData(newManifestData: ManifestData) {
 		this.#manifestData = newManifestData;
 	}
+
 	removeBase(pathname: string) {
 		if (pathname.startsWith(this.#manifest.base)) {
 			return pathname.slice(this.#baseWithoutTrailingSlash.length + 1);
@@ -206,7 +209,7 @@ export class App {
 					let locale;
 					const hostAsUrl = new URL(`${protocol}//${host}`);
 					for (const [domainKey, localeValue] of Object.entries(
-						this.#manifest.i18n.domainLookupTable
+						this.#manifest.i18n.domainLookupTable,
 					)) {
 						// This operation should be safe because we force the protocol via zod inside the configuration
 						// If not, then it means that the manifest was tampered
@@ -223,7 +226,7 @@ export class App {
 
 					if (locale) {
 						pathname = prependForwardSlash(
-							joinPaths(normalizeTheLocale(locale), this.removeBase(url.pathname))
+							joinPaths(normalizeTheLocale(locale), this.removeBase(url.pathname)),
 						);
 						if (url.pathname.endsWith('/')) {
 							pathname = appendForwardSlash(pathname);
@@ -232,7 +235,7 @@ export class App {
 				} catch (e: any) {
 					this.#logger.error(
 						'router',
-						`Astro tried to parse ${protocol}//${host} as an URL, but it threw a parsing error. Check the X-Forwarded-Host and X-Forwarded-Proto headers.`
+						`Astro tried to parse ${protocol}//${host} as an URL, but it threw a parsing error. Check the X-Forwarded-Host and X-Forwarded-Proto headers.`,
 					);
 					this.#logger.error('router', `Error: ${e}`);
 				}
@@ -250,7 +253,7 @@ export class App {
 	async render(
 		request: Request,
 		routeDataOrOptions?: RouteData | RenderOptions,
-		maybeLocals?: object
+		maybeLocals?: object,
 	): Promise<Response> {
 		let routeData: RouteData | undefined;
 		let locals: object | undefined;
@@ -287,7 +290,7 @@ export class App {
 			this.#logger.debug(
 				'router',
 				'The adapter ' + this.#manifest.adapterName + ' provided a custom RouteData for ',
-				request.url
+				request.url,
 			);
 			this.#logger.debug('router', 'RouteData:\n' + routeData);
 		}
@@ -314,10 +317,12 @@ export class App {
 		}
 		const pathname = this.#getPathnameFromRequest(request);
 		const defaultStatus = this.#getDefaultStatusCode(routeData, pathname);
-		const mod = await this.#pipeline.getModuleForRoute(routeData);
 
 		let response;
 		try {
+			// Load route module. We also catch its error here if it fails on initialization
+			const mod = await this.#pipeline.getModuleForRoute(routeData);
+
 			const renderContext = RenderContext.create({
 				pipeline: this.#pipeline,
 				locals,
@@ -365,7 +370,7 @@ export class App {
 		if (this.#renderOptionsDeprecationWarningShown) return;
 		this.#logger.warn(
 			'deprecated',
-			`The adapter ${this.#manifest.adapterName} is using a deprecated signature of the 'app.render()' method. From Astro 4.0, locals and routeData are provided as properties on an optional object to this method. Using the old signature will cause an error in Astro 5.0. See https://github.com/withastro/astro/pull/9199 for more information.`
+			`The adapter ${this.#manifest.adapterName} is using a deprecated signature of the 'app.render()' method. From Astro 4.0, locals and routeData are provided as properties on an optional object to this method. Using the old signature will cause an error in Astro 5.0. See https://github.com/withastro/astro/pull/9199 for more information.`,
 		);
 		this.#renderOptionsDeprecationWarningShown = true;
 	}
@@ -399,7 +404,7 @@ export class App {
 			response: originalResponse,
 			skipMiddleware = false,
 			error,
-		}: RenderErrorOptions
+		}: RenderErrorOptions,
 	): Promise<Response> {
 		const errorRoutePath = `/${status}${this.#manifest.trailingSlash === 'always' ? '/' : ''}`;
 		const errorRouteData = matchRoute(errorRoutePath, this.#manifestData);
@@ -409,7 +414,7 @@ export class App {
 				const maybeDotHtml = errorRouteData.route.endsWith(`/${status}`) ? '.html' : '';
 				const statusURL = new URL(
 					`${this.#baseWithoutTrailingSlash}/${status}${maybeDotHtml}`,
-					url
+					url,
 				);
 				const response = await fetch(statusURL.toString());
 
@@ -454,7 +459,7 @@ export class App {
 	#mergeResponses(
 		newResponse: Response,
 		originalResponse?: Response,
-		override?: { status: 404 | 500 }
+		override?: { status: 404 | 500 },
 	) {
 		if (!originalResponse) {
 			if (override !== undefined) {
@@ -496,7 +501,7 @@ export class App {
 	}
 
 	#getDefaultStatusCode(routeData: RouteData, pathname: string): number {
-		if (!routeData.pattern.exec(pathname)) {
+		if (!routeData.pattern.test(pathname)) {
 			for (const fallbackRoute of routeData.fallbackRoutes) {
 				if (fallbackRoute.pattern.test(pathname)) {
 					return 302;

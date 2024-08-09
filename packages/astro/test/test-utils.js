@@ -128,7 +128,7 @@ export async function loadFixture(inlineConfig) {
 	const resolveUrl = (url) =>
 		`${protocol}://${config.server.host || 'localhost'}:${config.server.port}${url.replace(
 			/^\/?/,
-			'/'
+			'/',
 		)}`;
 
 	// A map of files that have been edited.
@@ -161,9 +161,7 @@ export async function loadFixture(inlineConfig) {
 			process.env.NODE_ENV = 'production';
 			return build(mergeConfig(inlineConfig, extraInlineConfig), { teardownCompiler: false });
 		},
-		sync: async (extraInlineConfig = {}, opts) => {
-			return sync(mergeConfig(inlineConfig, extraInlineConfig), opts);
-		},
+		sync,
 		check: async (opts) => {
 			return await check(opts);
 		},
@@ -215,7 +213,7 @@ export async function loadFixture(inlineConfig) {
 		readFile: (filePath, encoding) =>
 			fs.promises.readFile(
 				new URL(filePath.replace(/^\//, ''), config.outDir),
-				encoding === undefined ? 'utf8' : encoding
+				encoding === undefined ? 'utf8' : encoding,
 			),
 		readdir: (fp) => fs.promises.readdir(new URL(fp.replace(/^\//, ''), config.outDir)),
 		glob: (p) =>

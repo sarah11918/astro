@@ -8,7 +8,6 @@ import type {
 import { getOutputDirectory } from '../../prerender/utils.js';
 import { BEFORE_HYDRATION_SCRIPT_ID, PAGE_SCRIPT_ID } from '../../vite-plugin-scripts/index.js';
 import type { SSRManifest } from '../app/types.js';
-import { DEFAULT_404_COMPONENT } from '../constants.js';
 import { routeIsFallback, routeIsRedirect } from '../redirects/helpers.js';
 import { RedirectSinglePageBuiltModule } from '../redirects/index.js';
 import { Pipeline } from '../render/index.js';
@@ -17,7 +16,7 @@ import {
 	createModuleScriptsSet,
 	createStylesheetElementSet,
 } from '../render/ssr-element.js';
-import { default404Page } from '../routing/astro-designed-error-pages.js';
+import { createDefaultRoutes } from '../routing/default.js';
 import { findRouteToRewrite } from '../routing/rewrite.js';
 import { isServerLikeOutput } from '../util.js';
 import { getOutDirWithinCwd } from './common.js';
@@ -54,9 +53,11 @@ export class BuildPipeline extends Pipeline {
 		readonly manifest: SSRManifest,
 		readonly options: StaticBuildOptions,
 		readonly config = options.settings.config,
-		readonly settings = options.settings
+		readonly settings = options.settings,
+		readonly defaultRoutes = createDefaultRoutes(manifest),
 	) {
 		const resolveCache = new Map<string, string>();
+
 		async function resolve(specifier: string) {
 			if (resolveCache.has(specifier)) {
 				return resolveCache.get(specifier)!;
@@ -75,6 +76,7 @@ export class BuildPipeline extends Pipeline {
 			resolveCache.set(specifier, assetLink);
 			return assetLink;
 		}
+
 		const serverLike = isServerLikeOutput(config);
 		// We can skip streaming in SSG for performance as writing as strings are faster
 		const streaming = serverLike;
@@ -85,7 +87,7 @@ export class BuildPipeline extends Pipeline {
 			manifest.renderers,
 			resolve,
 			serverLike,
-			streaming
+			streaming,
 		);
 	}
 
@@ -112,18 +114,18 @@ export class BuildPipeline extends Pipeline {
 	 */
 	static async retrieveManifest(
 		staticBuildOptions: StaticBuildOptions,
-		internals: BuildInternals
+		internals: BuildInternals,
 	): Promise<SSRManifest> {
 		const config = staticBuildOptions.settings.config;
 		const baseDirectory = getOutputDirectory(config);
 		const manifestEntryUrl = new URL(
 			`${internals.manifestFileName}?time=${Date.now()}`,
-			baseDirectory
+			baseDirectory,
 		);
 		const { manifest } = await import(manifestEntryUrl.toString());
 		if (!manifest) {
 			throw new Error(
-				"Astro couldn't find the emitted manifest. This is an internal error, please file an issue."
+				"Astro couldn't find the emitted manifest. This is an internal error, please file an issue.",
 			);
 		}
 
@@ -138,7 +140,7 @@ export class BuildPipeline extends Pipeline {
 
 		if (!renderers) {
 			throw new Error(
-				"Astro couldn't find the emitted renderers. This is an internal error, please file an issue."
+				"Astro couldn't find the emitted renderers. This is an internal error, please file an issue.",
 			);
 		}
 		return {
@@ -159,7 +161,7 @@ export class BuildPipeline extends Pipeline {
 		const scripts = createModuleScriptsSet(
 			pageBuildData?.hoistedScript ? [pageBuildData.hoistedScript] : [],
 			base,
-			assetsPrefix
+			assetsPrefix,
 		);
 		const sortedCssAssets = pageBuildData?.styles
 			.sort(cssOrder)
@@ -214,8 +216,8 @@ export class BuildPipeline extends Pipeline {
 						...getPagesFromVirtualModulePageName(
 							this.internals,
 							ASTRO_PAGE_RESOLVED_MODULE_ID,
-							virtualModulePageName
-						)
+							virtualModulePageName,
+						),
 					);
 				}
 				if (virtualModulePageName.includes(RESOLVED_SPLIT_MODULE_ID)) {
@@ -223,8 +225,8 @@ export class BuildPipeline extends Pipeline {
 						...getPagesFromVirtualModulePageName(
 							this.internals,
 							RESOLVED_SPLIT_MODULE_ID,
-							virtualModulePageName
-						)
+							virtualModulePageName,
+						),
 					);
 				}
 				for (const pageData of pageDatas) {
@@ -269,20 +271,24 @@ export class BuildPipeline extends Pipeline {
 			// SAFETY: checked before
 			const entry = this.#componentsInterner.get(routeData)!;
 			return await entry.page();
-		} else if (routeData.component === DEFAULT_404_COMPONENT) {
-			return { default: default404Page };
-		} else {
-			// SAFETY: the pipeline calls `retrieveRoutesToGenerate`, which is in charge to fill the cache.
-			const filePath = this.#routesByFilePath.get(routeData)!;
-			const module = await this.retrieveSsrEntry(routeData, filePath);
-			return module.page();
 		}
+
+		for (const route of this.defaultRoutes) {
+			if (route.component === routeData.component) {
+				return route.instance;
+			}
+		}
+
+		// SAFETY: the pipeline calls `retrieveRoutesToGenerate`, which is in charge to fill the cache.
+		const filePath = this.#routesByFilePath.get(routeData)!;
+		const module = await this.retrieveSsrEntry(routeData, filePath);
+		return module.page();
 	}
 
 	async tryRewrite(
 		payload: RewritePayload,
 		request: Request,
-		_sourceRoute: RouteData
+		_sourceRoute: RouteData,
 	): Promise<[RouteData, ComponentInstance, URL]> {
 		const [foundRoute, finalUrl] = findRouteToRewrite({
 			payload,
@@ -318,7 +324,7 @@ export class BuildPipeline extends Pipeline {
 	async #getEntryForFallbackRoute(
 		route: RouteData,
 		internals: BuildInternals,
-		outFolder: URL
+		outFolder: URL,
 	): Promise<SinglePageBuiltModule> {
 		if (route.type !== 'fallback') {
 			throw new Error(`Expected a redirect route.`);
@@ -338,7 +344,7 @@ export class BuildPipeline extends Pipeline {
 	async #getEntryForRedirectRoute(
 		route: RouteData,
 		internals: BuildInternals,
-		outFolder: URL
+		outFolder: URL,
 	): Promise<SinglePageBuiltModule> {
 		if (route.type !== 'redirect') {
 			throw new Error(`Expected a redirect route.`);

@@ -23,6 +23,8 @@ export function createBaseSettings(config: AstroConfig): AstroSettings {
 		adapter: undefined,
 		injectedRoutes: [],
 		resolvedInjectedRoutes: [],
+		serverIslandMap: new Map(),
+		serverIslandNameMap: new Map(),
 		pageExtensions: ['.astro', '.html', ...SUPPORTED_MARKDOWN_FILE_EXTENSIONS],
 		contentEntryTypes: [markdownContentEntryType],
 		dataEntryTypes: [
@@ -33,7 +35,7 @@ export function createBaseSettings(config: AstroConfig): AstroSettings {
 
 					const pathRelToContentDir = path.relative(
 						fileURLToPath(contentDir),
-						fileURLToPath(fileUrl)
+						fileURLToPath(fileUrl),
 					);
 					let data;
 					try {
@@ -43,7 +45,7 @@ export function createBaseSettings(config: AstroConfig): AstroSettings {
 							...AstroErrorData.DataCollectionEntryParseError,
 							message: AstroErrorData.DataCollectionEntryParseError.message(
 								pathRelToContentDir,
-								e instanceof Error ? e.message : 'contains invalid JSON.'
+								e instanceof Error ? e.message : 'contains invalid JSON.',
 							),
 							location: { file: fileUrl.pathname },
 							stack: e instanceof Error ? e.stack : undefined,
@@ -55,7 +57,7 @@ export function createBaseSettings(config: AstroConfig): AstroSettings {
 							...AstroErrorData.DataCollectionEntryParseError,
 							message: AstroErrorData.DataCollectionEntryParseError.message(
 								pathRelToContentDir,
-								'data is not an object.'
+								'data is not an object.',
 							),
 							location: { file: fileUrl.pathname },
 						});
@@ -75,7 +77,7 @@ export function createBaseSettings(config: AstroConfig): AstroSettings {
 					} catch (e) {
 						const pathRelToContentDir = path.relative(
 							fileURLToPath(contentDir),
-							fileURLToPath(fileUrl)
+							fileURLToPath(fileUrl),
 						);
 						const formattedError = isYAMLException(e)
 							? formatYAMLException(e)
@@ -85,7 +87,7 @@ export function createBaseSettings(config: AstroConfig): AstroSettings {
 							...AstroErrorData.DataCollectionEntryParseError,
 							message: AstroErrorData.DataCollectionEntryParseError.message(
 								pathRelToContentDir,
-								formattedError.message
+								formattedError.message,
 							),
 							stack: formattedError.stack,
 							location:
@@ -120,7 +122,7 @@ export async function createSettings(config: AstroConfig, cwd?: string): Promise
 
 	if (typeof tsconfig !== 'string') {
 		watchFiles.push(
-			...[tsconfig.tsconfigFile, ...(tsconfig.extended ?? []).map((e) => e.tsconfigFile)]
+			...[tsconfig.tsconfigFile, ...(tsconfig.extended ?? []).map((e) => e.tsconfigFile)],
 		);
 		settings.tsConfig = tsconfig.tsconfig;
 		settings.tsConfigPath = tsconfig.tsconfigFile;

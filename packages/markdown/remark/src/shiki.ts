@@ -19,7 +19,7 @@ export interface ShikiHighlighter {
 			 * Raw `meta` information to be used by Shiki transformers
 			 */
 			meta?: string;
-		}
+		},
 	): Promise<string>;
 }
 
@@ -30,7 +30,7 @@ const ASTRO_COLOR_REPLACEMENTS: Record<string, string> = {
 };
 const COLOR_REPLACEMENT_REGEX = new RegExp(
 	`${Object.keys(ASTRO_COLOR_REPLACEMENTS).join('|')}`,
-	'g'
+	'g',
 );
 
 let _cssVariablesTheme: ReturnType<typeof createCssVariablesTheme>;
@@ -42,6 +42,7 @@ export async function createShikiHighlighter({
 	langs = [],
 	theme = 'github-dark',
 	themes = {},
+	defaultColor,
 	wrap = false,
 	transformers = [],
 }: ShikiConfig = {}): Promise<ShikiHighlighter> {
@@ -62,7 +63,7 @@ export async function createShikiHighlighter({
 				} catch (_err) {
 					// eslint-disable-next-line no-console
 					console.warn(
-						`[Shiki] The language "${lang}" doesn't exist, falling back to "plaintext".`
+						`[Shiki] The language "${lang}" doesn't exist, falling back to "plaintext".`,
 					);
 					lang = 'plaintext';
 				}
@@ -73,6 +74,7 @@ export async function createShikiHighlighter({
 
 			return highlighter.codeToHtml(code, {
 				...themeOptions,
+				defaultColor,
 				lang,
 				// NOTE: while we can spread `options.attributes` here so that Shiki can auto-serialize this as rendered
 				// attributes on the top-level tag, it's not clear whether it is fine to pass all attributes as meta, as

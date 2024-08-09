@@ -27,7 +27,7 @@ const replaceExp = new RegExp(`['"]${manifestReplace}['"]`, 'g');
 export const SSR_MANIFEST_VIRTUAL_MODULE_ID = '@astrojs-manifest';
 export const RESOLVED_SSR_MANIFEST_VIRTUAL_MODULE_ID = '\0' + SSR_MANIFEST_VIRTUAL_MODULE_ID;
 
-function vitePluginManifest(options: StaticBuildOptions, internals: BuildInternals): VitePlugin {
+function vitePluginManifest(_options: StaticBuildOptions, internals: BuildInternals): VitePlugin {
 	return {
 		name: '@astro/plugin-build-manifest',
 		enforce: 'post',
@@ -78,7 +78,7 @@ function vitePluginManifest(options: StaticBuildOptions, internals: BuildInterna
 
 export function pluginManifest(
 	options: StaticBuildOptions,
-	internals: BuildInternals
+	internals: BuildInternals,
 ): AstroBuildPlugin {
 	return {
 		targets: ['server'],
@@ -113,9 +113,9 @@ export function pluginManifest(
 	};
 }
 
-export async function createManifest(
+async function createManifest(
 	buildOpts: StaticBuildOptions,
-	internals: BuildInternals
+	internals: BuildInternals,
 ): Promise<SerializedSSRManifest> {
 	if (!internals.manifestEntryChunk) {
 		throw new Error(`Did not generate an entry chunk for SSR`);
@@ -125,7 +125,7 @@ export async function createManifest(
 	const clientStatics = new Set(
 		await glob('**/*', {
 			cwd: fileURLToPath(buildOpts.settings.config.build.client),
-		})
+		}),
 	);
 	for (const file of clientStatics) {
 		internals.staticFiles.add(file);
@@ -137,11 +137,8 @@ export async function createManifest(
 
 /**
  * It injects the manifest in the given output rollup chunk. It returns the new emitted code
- * @param buildOpts
- * @param internals
- * @param chunk
  */
-export function injectManifest(manifest: SerializedSSRManifest, chunk: Readonly<OutputChunk>) {
+function injectManifest(manifest: SerializedSSRManifest, chunk: Readonly<OutputChunk>) {
 	const code = chunk.code;
 
 	return code.replace(replaceExp, () => {
@@ -152,7 +149,7 @@ export function injectManifest(manifest: SerializedSSRManifest, chunk: Readonly<
 function buildManifest(
 	opts: StaticBuildOptions,
 	internals: BuildInternals,
-	staticFiles: string[]
+	staticFiles: string[],
 ): SerializedSSRManifest {
 	const { settings } = opts;
 
@@ -200,7 +197,7 @@ function buildManifest(
 			scripts.unshift(
 				Object.assign({}, pageData.hoistedScript, {
 					value,
-				})
+				}),
 			);
 		}
 		if (settings.scripts.some((script) => script.stage === 'page')) {
@@ -262,6 +259,7 @@ function buildManifest(
 	}
 
 	return {
+		hrefRoot: opts.settings.config.root.toString(),
 		adapterName: opts.settings.adapter?.name ?? '',
 		routes,
 		site: settings.config.site,
@@ -278,7 +276,7 @@ function buildManifest(
 		i18n: i18nManifest,
 		buildFormat: settings.config.build.format,
 		checkOrigin: settings.config.security?.checkOrigin ?? false,
-		rewritingEnabled: settings.config.experimental.rewriting,
+		serverIslandNameMap: Array.from(settings.serverIslandNameMap),
 		experimentalEnvGetSecretEnabled:
 			settings.config.experimental.env !== undefined &&
 			(settings.adapter?.supportedAstroFeatures.envGetSecret ?? 'unsupported') !== 'unsupported',

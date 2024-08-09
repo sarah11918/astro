@@ -14,6 +14,7 @@ import { AstroError } from './errors/errors.js';
 import { AstroErrorData } from './errors/index.js';
 import type { Logger } from './logger/core.js';
 import { RouteCache } from './render/route-cache.js';
+import { createDefaultRoutes } from './routing/default.js';
 
 /**
  * The `Pipeline` represents the static parts of rendering that do not change between requests.
@@ -52,13 +53,18 @@ export abstract class Pipeline {
 		 * Used for `Astro.site`.
 		 */
 		readonly site = manifest.site ? new URL(manifest.site) : undefined,
-		readonly callSetGetEnv = true
+		readonly callSetGetEnv = true,
+		/**
+		 * Array of built-in, internal, routes.
+		 * Used to find the route module
+		 */
+		readonly defaultRoutes = createDefaultRoutes(manifest),
 	) {
 		this.internalMiddleware = [];
 		// We do use our middleware only if the user isn't using the manual setup
 		if (i18n?.strategy !== 'manual') {
 			this.internalMiddleware.push(
-				createI18nMiddleware(i18n, manifest.base, manifest.trailingSlash, manifest.buildFormat)
+				createI18nMiddleware(i18n, manifest.base, manifest.trailingSlash, manifest.buildFormat),
 			);
 		}
 		// In SSR, getSecret should fail by default. Setting it here will run before the
@@ -71,6 +77,7 @@ export abstract class Pipeline {
 	}
 
 	abstract headElements(routeData: RouteData): Promise<HeadElements> | HeadElements;
+
 	abstract componentMetadata(routeData: RouteData): Promise<SSRResult['componentMetadata']> | void;
 
 	/**
@@ -87,7 +94,7 @@ export abstract class Pipeline {
 	abstract tryRewrite(
 		rewritePayload: RewritePayload,
 		request: Request,
-		sourceRoute: RouteData
+		sourceRoute: RouteData,
 	): Promise<[RouteData, ComponentInstance, URL]>;
 
 	/**
@@ -97,5 +104,5 @@ export abstract class Pipeline {
 	abstract getComponentByRoute(routeData: RouteData): Promise<ComponentInstance>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HeadElements extends Pick<SSRResult, 'scripts' | 'styles' | 'links'> {}

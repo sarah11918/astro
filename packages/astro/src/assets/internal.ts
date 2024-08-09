@@ -10,7 +10,7 @@ import {
 	isImageMetadata,
 } from './types.js';
 import { isESMImportedImage, isRemoteImage, resolveSrc } from './utils/imageKind.js';
-import { probe } from './utils/remoteProbe.js';
+import { inferRemoteSize } from './utils/remoteProbe.js';
 
 export async function getConfiguredImageService(): Promise<ImageService> {
 	if (!globalThis?.astroAsset?.imageService) {
@@ -33,7 +33,7 @@ export async function getConfiguredImageService(): Promise<ImageService> {
 
 export async function getImage(
 	options: UnresolvedImageTransform,
-	imageConfig: AstroConfig['image']
+	imageConfig: AstroConfig['image'],
 ): Promise<GetImageResult> {
 	if (!options || typeof options !== 'object') {
 		throw new AstroError({
@@ -47,7 +47,7 @@ export async function getImage(
 			message: AstroErrorData.ExpectedImage.message(
 				options.src,
 				'undefined',
-				JSON.stringify(options)
+				JSON.stringify(options),
 			),
 		});
 	}
@@ -66,17 +66,10 @@ export async function getImage(
 
 	// Infer size for remote images if inferSize is true
 	if (options.inferSize && isRemoteImage(resolvedOptions.src)) {
-		try {
-			const result = await probe(resolvedOptions.src); // Directly probe the image URL
-			resolvedOptions.width ??= result.width;
-			resolvedOptions.height ??= result.height;
-			delete resolvedOptions.inferSize; // Delete so it doesn't end up in the attributes
-		} catch {
-			throw new AstroError({
-				...AstroErrorData.FailedToFetchRemoteImageDimensions,
-				message: AstroErrorData.FailedToFetchRemoteImageDimensions.message(resolvedOptions.src),
-			});
-		}
+		const result = await inferRemoteSize(resolvedOptions.src); // Directly probe the image URL
+		resolvedOptions.width ??= result.width;
+		resolvedOptions.height ??= result.height;
+		delete resolvedOptions.inferSize; // Delete so it doesn't end up in the attributes
 	}
 
 	const originalFilePath = isESMImportedImage(resolvedOptions.src)
@@ -108,7 +101,7 @@ export async function getImage(
 			url: await service.getURL(srcSet.transform, imageConfig),
 			descriptor: srcSet.descriptor,
 			attributes: srcSet.attributes,
-		}))
+		})),
 	);
 
 	if (
@@ -120,7 +113,7 @@ export async function getImage(
 		imageURL = globalThis.astroAsset.addStaticImage(
 			validatedOptions,
 			propsToHash,
-			originalFilePath
+			originalFilePath,
 		);
 		srcSets = srcSetTransforms.map((srcSet) => ({
 			transform: srcSet.transform,

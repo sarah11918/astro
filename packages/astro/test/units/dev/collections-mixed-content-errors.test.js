@@ -6,8 +6,19 @@ import { createFsWithFallback } from '../test-utils.js';
 
 const root = new URL('../../fixtures/content-mixed-errors/', import.meta.url);
 
-async function sync({ fs, config = {} }) {
-	return _sync({ ...config, root: fileURLToPath(root), logLevel: 'silent' }, { fs });
+async function sync({ fs }) {
+	try {
+		await _sync({
+			inlineConfig: {
+				root: fileURLToPath(root),
+				logLevel: 'silent',
+			},
+			fs,
+		});
+		return 0;
+	} catch (_) {
+		return 1;
+	}
 }
 
 describe('Content Collections - mixed content errors', () => {
@@ -33,7 +44,7 @@ name: Ben
 
 					export const collections = { authors };`,
 			},
-			root
+			root,
 		);
 
 		assert.equal(await sync({ fs }), 1);
@@ -61,7 +72,7 @@ title: Post
 
 					export const collections = { blog };`,
 			},
-			root
+			root,
 		);
 
 		assert.equal(await sync({ fs }), 1);
@@ -84,7 +95,7 @@ title: Post
 
 					export const collections = { banners };`,
 			},
-			root
+			root,
 		);
 
 		assert.equal(await sync({ fs }), 1);
@@ -107,14 +118,14 @@ title: Post
 
 					export const collections = { i18n };`,
 			},
-			root
+			root,
 		);
 
 		try {
 			const res = await sync({ fs });
 			assert.equal(res, 0);
 		} catch (e) {
-			expect.fail(0, 1, `Did not expect sync to throw: ${e.message}`);
+			assert.fail(`Did not expect sync to throw: ${e.message}`);
 		}
 	});
 });
