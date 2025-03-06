@@ -43,7 +43,7 @@ export default function createVitePluginAstroServer({
 }: AstroPluginOptions): vite.Plugin {
 	return {
 		name: 'astro:server',
-		configureServer(viteServer) {
+		async configureServer(viteServer) {
 			const loader = createViteLoader(viteServer);
 			const pipeline = DevPipeline.create(routesList, {
 				loader,
@@ -190,6 +190,7 @@ export function createDevelopmentManifest(settings: AstroSettings): SSRManifest 
 		clientDirectives: settings.clientDirectives,
 		renderers: [],
 		base: settings.config.base,
+		userAssetsBase: settings.config?.vite?.base,
 		assetsPrefix: settings.config.build.assetsPrefix,
 		site: settings.config.site,
 		componentMetadata: new Map(),
