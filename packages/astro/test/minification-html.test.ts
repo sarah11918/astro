@@ -114,7 +114,7 @@ describe('HTML minification (JSX mode)', () => {
 		it('should preserve inline text and elements on the same line', () => {
 			assert.ok(
 				html.includes('<span>hello</span> <em>world</em>'),
-				'inline elements should preserve spacing'
+				'inline elements should preserve spacing',
 			);
 		});
 	});
