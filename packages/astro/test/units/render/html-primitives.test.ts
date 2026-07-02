@@ -302,7 +302,7 @@ describe('renderHTMLElement rejects invalid attribute keys', () => {
 		const html = await renderHTMLElement(
 			result,
 			class {} as any,
-			{ 'id': 'a', 'data-foo': 'b', 'on:click': 'c' },
+			{ id: 'a', 'data-foo': 'b', 'on:click': 'c' },
 			{},
 		);
 		const output = String(html);
