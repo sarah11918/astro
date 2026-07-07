@@ -4448,6 +4448,9 @@ importers:
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.17
+      wrangler:
+        specifier: ^4.83.0
+        version: 4.95.0(@cloudflare/workers-types@4.20260527.1)
 
   packages/integrations/cloudflare/test/fixtures/allowed-hosts:
     dependencies:
