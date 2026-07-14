@@ -116,8 +116,7 @@ export function routeGuardMiddleware(settings: AstroSettings): vite.Connect.Next
 		const fsInfo: RouteGuardFsInfo = {
 			existsInPublic:
 				resolved.pathname.startsWith(config.publicDir.pathname) && fs.existsSync(resolved),
-			existsInSrc:
-				resolved.pathname.startsWith(config.srcDir.pathname) && fs.existsSync(resolved),
+			existsInSrc: resolved.pathname.startsWith(config.srcDir.pathname) && fs.existsSync(resolved),
 			existsAtRootAsFile: false,
 		};
 

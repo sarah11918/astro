@@ -30,11 +30,7 @@ describe('routeGuardMiddleware — filesystem resolution', () => {
 		});
 
 		assert.equal(nextCalled, true, 'next() should be called — file is inside srcDir');
-		assert.notEqual(
-			(res as any).statusCode,
-			404,
-			'should not return 404 for files inside srcDir',
-		);
+		assert.notEqual((res as any).statusCode, 404, 'should not return 404 for files inside srcDir');
 	});
 
 	it('blocks root-level files outside srcDir/publicDir', async () => {
