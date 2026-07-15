@@ -121,6 +121,7 @@ export const ASTRO_CONFIG_DEFAULTS = {
 		clientPrerender: false,
 		contentIntellisense: false,
 		chromeDevtoolsWorkspace: false,
+		collectionStorage: 'single-file',
 	},
 } satisfies AstroUserConfig & {
 	server: { open: boolean };
@@ -582,6 +583,10 @@ export const AstroConfigSchema = z.object({
 				.optional()
 				.default(ASTRO_CONFIG_DEFAULTS.experimental.chromeDevtoolsWorkspace),
 			svgOptimizer: SvgOptimizerSchema.optional(),
+			collectionStorage: z
+				.enum(['single-file', 'chunked'])
+				.optional()
+				.default(ASTRO_CONFIG_DEFAULTS.experimental.collectionStorage),
 		})
 		.prefault({}),
 	legacy: z
