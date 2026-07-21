@@ -141,21 +141,22 @@ function syncTagNodeAttributes(config: MergedConfig): void {
 }
 
 /**
- * Check if a transform function respects the `render` property.
- * Astro's built-in transforms (like for headings) check `config.nodes?.X?.render`
- * to allow custom render components. Markdoc's built-in transforms do not.
+ * Check if a transform is a built-in Markdoc transform (from `Markdoc.nodes` or `Markdoc.tags`).
+ * Built-in Markdoc transforms don't respect the `render` property, so they need to be removed
+ * when a custom `render` component is specified. Non-built-in transforms (user-written or Astro's
+ * own, like for headings) are preserved — they are assumed to handle `render` correctly.
  */
-function transformRespectsRender(transform: { toString(): string }, configKey: string): boolean {
-	const source = transform.toString();
-	// `configKey` may not be a valid identifier (e.g. `side-note`), so a render-respecting
-	// transform can read `render` via dot or bracket access. Escape the key and match either.
-	const key = configKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	const member = (prop: string) =>
-		`(?:\\??\\.\\s*${prop}|\\??\\.?\\s*\\[\\s*['"\`]${prop}['"\`]\\s*\\])`;
-	const pattern = new RegExp(
-		`config\\s*\\??\\.\\s*(?:nodes|tags)\\s*${member(key)}\\s*${member('render')}`,
-	);
-	return pattern.test(source);
+function isBuiltinMarkdocTransform(
+	transform: (...args: any[]) => unknown,
+	configKey: string,
+): boolean {
+	const builtinNode = (
+		Markdoc.nodes as Record<string, { transform?: (...args: any[]) => unknown } | undefined>
+	)[configKey];
+	const builtinTag = (
+		Markdoc.tags as Record<string, { transform?: (...args: any[]) => unknown } | undefined>
+	)[configKey];
+	return transform === builtinNode?.transform || transform === builtinTag?.transform;
 }
 
 export function resolveComponentImports(
@@ -167,12 +168,12 @@ export function resolveComponentImports(
 		const config = markdocConfig.tags[tag];
 		if (config) {
 			config.render = render;
-			// When a custom `render` component is specified and the transform doesn't
-			// respect the render property, remove the transform so `render` wins.
-			// This allows users to spread built-in Markdoc node/tag configs
-			// (e.g., `...Markdoc.nodes.fence`) and override rendering with a custom component.
+			// When a custom `render` component is specified and the transform is a
+			// built-in Markdoc transform, remove it so `render` wins. Built-in
+			// transforms (e.g., from `...Markdoc.nodes.fence`) don't respect the
+			// `render` property. User-written transforms are always preserved.
 			// See https://github.com/withastro/astro/issues/9708
-			if (config.transform && !transformRespectsRender(config.transform, tag)) {
+			if (config.transform && isBuiltinMarkdocTransform(config.transform, tag)) {
 				delete config.transform;
 			}
 		}
@@ -181,12 +182,12 @@ export function resolveComponentImports(
 		const config = markdocConfig.nodes[node as NodeType];
 		if (config) {
 			config.render = render;
-			// When a custom `render` component is specified and the transform doesn't
-			// respect the render property, remove the transform so `render` wins.
-			// This allows users to spread built-in Markdoc node/tag configs
-			// (e.g., `...Markdoc.nodes.fence`) and override rendering with a custom component.
+			// When a custom `render` component is specified and the transform is a
+			// built-in Markdoc transform, remove it so `render` wins. Built-in
+			// transforms (e.g., from `...Markdoc.nodes.fence`) don't respect the
+			// `render` property. User-written transforms are always preserved.
 			// See https://github.com/withastro/astro/issues/9708
-			if (config.transform && !transformRespectsRender(config.transform, node)) {
+			if (config.transform && isBuiltinMarkdocTransform(config.transform, node)) {
 				delete config.transform;
 			}
 		}
