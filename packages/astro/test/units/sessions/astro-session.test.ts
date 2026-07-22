@@ -41,7 +41,7 @@ function createSession(
 	cookies: MockCookies = defaultMockCookies,
 	mockStorage: Storage | null = null,
 	runtimeMode: RuntimeMode = 'production',
-	logger: SpyLogger = new SpyLogger()
+	logger: SpyLogger = new SpyLogger(),
 ) {
 	// driverFactory from unstorage/drivers/memory accepts no config; wrap it to satisfy SessionDriverFactory
 	const typedDriverFactory: SessionDriverFactory = () => driverFactory();
@@ -684,12 +684,18 @@ describe('AstroSession - regenerate() error path', () => {
 			},
 			async setItem() {},
 			async removeItem() {},
-			async getKeys() { return []; },
+			async getKeys() {
+				return [];
+			},
 			async clear() {},
 			async dispose() {},
-			async hasItem() { return false; },
+			async hasItem() {
+				return false;
+			},
 			async setItemRaw() {},
-			async getItemRaw() { return null; },
+			async getItemRaw() {
+				return null;
+			},
 		};
 
 		const session = createSession(
@@ -720,7 +726,11 @@ describe('AstroSession - regenerate() error path', () => {
 		// If #partial is correctly reset to false, this will use the in-memory Map.
 		await session.get('foo');
 
-		assert.equal(storageGetCount, 0, 'Should not round-trip to storage; #partial should be false after regeneration');
+		assert.equal(
+			storageGetCount,
+			0,
+			'Should not round-trip to storage; #partial should be false after regeneration',
+		);
 	});
 });
 // #endregion
