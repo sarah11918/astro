@@ -47,9 +47,7 @@ let cursor: string | null = null;
 do {
 	const cursorArg = cursor ? ` -F cursor=${cursor}` : '';
 	const { data } = JSON.parse(
-		gh(
-			`gh api graphql -f query='${query}' -F owner=${owner} -F name=${name}${cursorArg}`,
-		),
+		gh(`gh api graphql -f query='${query}' -F owner=${owner} -F name=${name}${cursorArg}`),
 	) as {
 		data: {
 			repository: {
